@@ -1,14 +1,52 @@
-require 'data_downloader.rb'
+require 'rubygems'
+require 'sqlite3'
+require 'active_record'
+require 'data_downloader'
+require 'xls_charity_parser'
+require "org"
 
-downloader = MasterFile::DataDownloader.new
+MASTERFILE_DB_NAME = '.master_file.db'
+MASTERFILE_DB = SQLite3::Database.new('.master_file.db')
+
+ActiveRecord::Base.establish_connection(:adapter => 'sqlite3', :database => MASTERFILE_DB_NAME)
+
+#ein, name, care_of, address, city, state, zip_code, assetts, income, revenue, ntee_codes
+if !IRS::Org.table_exists?
+    ActiveRecord::Base.connection.create_table(:orgs) do |t|
+        t.column :ein, :string
+        t.column :care_of, :string
+        t.column :address, :string
+        t.column :city, :string
+        t.column :state, :string
+        t.column :zip_code, :string
+        t.column :address, :float
+        t.column :income, :float
+        t.column :revenue, :float
+        t.column :created_at, :datetime
+        t.column :updated_at, :datetime
+    end
+end
+
+downloader = IRS::DataDownloader.new
 files = downloader.download_files
 
-file.each do |file|
-    xls = MasterFile::XLSParser.new file
-    lables, rows = xls.parse
+files.each do |file|
+    xls = IRS::XLSParser.new file
+    labels, rows = xls.parse_file
 
     rows.each do |row|
-        charity = new MasterFile::Organization(labels, row)
-        #save charity
+        IRS::Org.transaction do
+            ein = IRS::Org.get_value(IRS::Org.EIN, labels, row)
+            org = IRS::Org.find_by_ein(ein)
+            if (org == nil)
+                org = new IRS::Org(labels, row)
+                org.save
+            else
+                if org.updated?(labels, row)
+                    org.update(labels, row)
+                    org.save
+                end
+            end
+        end
     end
 end

@@ -1,7 +1,7 @@
 require 'rubygems'
-gem 'roo'
+require 'roo'
 
-module MasterFile
+module IRS
     class XLSParser
         @xls #Excel file to parse
 

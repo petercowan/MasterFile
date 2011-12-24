@@ -1,9 +1,9 @@
 require 'rubygems'
 require 'uri'
 require 'net/http'
-gem 'nokogiri'
+require 'nokogiri'
 
-module MasterFile
+module IRS
     class DataDownloader
         ROOT_URL = "http://www.irs.gov/"
         DOWNLOAD_URL = "http://www.irs.gov/taxstats/charitablestats/article/0,,id=97186,00.html"
