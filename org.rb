@@ -33,50 +33,43 @@ module IRS
 
 #        attr_reader ein, name, care_of, address, city, state, zip_code, assetts, income, revenue
 
-        def initialize(labels, row)
-            set_values self, labels, row
-            created_at = Time.now
+        def initialize(row)
+            set_values row
+            self.created_at = Time.now
+            self.updated_at = created_at
         end
 
-        def updated?(labels, row)
-            (name != get_value(NAME, labels, row) \
-            || care_of != get_value(CARE_OF, labels, row) \
-            || address != get_value(ADDRESS, labels, row) \
-            || city != get_value(CITY, labels, row) \
-            || state != get_value(STATE, labels, row) \
-            || zip_code != get_value(ZIP, labels, row) \
-            || assetts != get_value(ASSETS, labels, row) \
-            || income != get_value(INCOME, labels, row) \
-            || revenue != get_value(REVENUE, labels, row))
+        def updated?(row)
+            (self.name != row.get_value(NAME) \
+            || self.care_of != row.get_value(CARE_OF) \
+            || self.address != row.get_value(ADDRESS) \
+            || self.city != row.get_value(CITY) \
+            || self.state != row.get_value(STATE) \
+            || self.zip_code != row.get_value(ZIP) \
+            || self.assetts != row.get_value(ASSETS) \
+            || self.income != row.get_value(INCOME) \
+            || self.revenue != row.get_value(REVENUE))
         end
 
-        def update(labels, row)
-            set_values self, labels, row
-            updated_at = Time.now
+        def update(row)
+            set_values row
+            self.updated_at = Time.now
         end
 
         private
 
-        def self.set_values(org, labels, row)
-            org.ein = get_value EIN, labels, row
-            org.name = get_value NAME, labels, row
-            org.care_of = get_value CARE_OF, labels, row
-            org.address = get_value ADDRESS, labels, row
-            org.city = get_value CITY, labels, row
-            org.state = get_value STATE, labels, row
-            org.zip_code = get_value ZIP, labels, row
-            org.assetts = get_value ASSETS, labels, row
-            org.income = get_value INCOME, labels, row
-            org.revenue = get_value REVENUE, labels, row
-            #@ntee_codes = get_values NTEE
-        end
-
-        def self.get_value(column_name, labels, row)
-            row[labels[column_name]]
-        end
-
-        def self.get_values(column_name, labels, row)
-            row[labels[column_name]].split ','
+        def set_values(row)
+            self.ein = row.get_value EIN
+            self.name = row.get_value NAME
+            self.care_of = row.get_value CARE_OF
+            self.address = row.get_value ADDRESS
+            self.city = row.get_value CITY
+            self.state = row.get_value STATE
+            self.zip_code = row.get_value ZIP
+            self.assetts = row.get_value ASSETS
+            self.income = row.get_value INCOME
+            self.revenue = row.get_value REVENUE
+            #@ntee_codes = row.get_values NTEE
         end
     end
 end

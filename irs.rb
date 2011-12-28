@@ -32,18 +32,18 @@ files = downloader.download_files
 
 files.each do |file|
     xls = IRS::XLSParser.new file
-    labels, rows = xls.parse_file
+    rows = xls.parse_file
 
     rows.each do |row|
         IRS::Org.transaction do
-            ein = IRS::Org.get_value(IRS::Org.EIN, labels, row)
+            ein = row.get_value(IRS::Org.EIN)
             org = IRS::Org.find_by_ein(ein)
             if (org == nil)
-                org = new IRS::Org(labels, row)
+                org = new IRS::Org(row)
                 org.save
             else
-                if org.updated?(labels, row)
-                    org.update(labels, row)
+                if org.updated?(row)
+                    org.update(row)
                     org.save
                 end
             end

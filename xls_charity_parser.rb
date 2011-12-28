@@ -7,7 +7,7 @@ module IRS
 
         def initialize(file_path)
             @xls = Excel.new(file_path)
-            @xls.default_sheet = oo.sheets.first
+            @xls.default_sheet = @xls.sheets.first
 
         end
 
@@ -19,10 +19,9 @@ module IRS
             rows = []
             header_row + 1.upto(last_row) do |index|
                 row = @xls.row(index)
-                rows << row
+                rows << IRS::NamedArray.new(labels, row)
             end
-
-            return labels, rows
+            rows
         end
 
         private
