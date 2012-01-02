@@ -1,9 +1,9 @@
 require 'rubygems'
 require 'sqlite3'
 require 'active_record'
-require 'data_downloader'
-require 'xls_charity_parser'
-require "org"
+require File.join(File.dirname(__FILE__), *%w[xls_charity_parser])
+require File.join(File.dirname(__FILE__), *%w[data_downloader])
+require File.join(File.dirname(__FILE__), *%w[org])
 
 MASTERFILE_DB_NAME = '.master_file.db'
 MASTERFILE_DB = SQLite3::Database.new('.master_file.db')
@@ -32,21 +32,21 @@ files = downloader.download_files
 
 files.each do |file|
     xls = IRS::XLSParser.new file
-    rows = xls.parse_file
+    orgs = xls.parse_file
 
-    rows.each do |row|
+    orgs.each do |org_hash|
         IRS::Org.transaction do
-            ein = row.get_value(IRS::Org.EIN)
-            org = IRS::Org.find_by_ein(ein)
-            if (org == nil)
-                org = new IRS::Org(row)
-                org.save
-            else
-                if org.updated?(row)
-                    org.update(row)
-                    org.save
+            ein = org_hash[:ein]
+            if (org = IRS::Org.find_by_ein(ein))
+                if org.changed?
+                    #org.save
                 end
+            else
+                org = IRS::Org.new org_hash
+                #org.save
             end
         end
     end
-end
+end unless files.nil?
+
+puts "hi"

@@ -14,32 +14,35 @@ module IRS
 
             links = doc.search('a').find { |link| link['href'].matches(/\/pub\/irs-soi\/eo_[^.]*\.xls/) }
 
-            local_files = []
-            begin
-                local_files << links.each { |link| download_file link }
-            rescue
-                #do something here?
+            if (!links.nil?)
+                local_files = links.each do |link|
+                    begin
+                        download_file(link)
+                    rescue
+                        #todo - log error, code smell
+                    end
+                end
+                local_files
             end
-            local_files
         end
 
         private
 
         def download_file(rel_path)
-            filename = rel_path[rel_path.rindex('/'),rel_path.length - 1]
-            local_file = DATA_DIR + filename
+            local_file = DATA_DIR + File.basename(rel_path)
 
+            #Mechanize
             Net::HTTP.start(ROOT_URL) { |http|
-                resp = http.get(rel_path)
-                open(local_file, "wb") { |file|
-                    file.write(resp.body)
-                }
+                begin
+                    resp = http.get(rel_path)
+                    open(local_file, "wb") { |file|
+                        file.write(resp.body)
+                    }
+                rescue
+                    #todo - log error, code smell
+                end
             }
             local_file
-        end
-
-        def get_abs_links(links)
-            links.collect { |link| URI.parse(ROOT_URL).merge(link).to_s }
         end
     end
 end

@@ -8,20 +8,25 @@ module IRS
         def initialize(file_path)
             @xls = Excel.new(file_path)
             @xls.default_sheet = @xls.sheets.first
-
         end
 
         def parse_file()
             header_row = @xls.first_row
             last_row = @xls.last_row
+            labels = to_hash_keys first_row { |item| header_row.index(item) }
 
-            labels = to_hash_keys first_row { |item| header_row.index(item)}
-            rows = []
+            orgs = Array.new
             header_row + 1.upto(last_row) do |index|
                 row = @xls.row(index)
-                rows << IRS::NamedArray.new(labels, row)
+                org = Hash.new
+                labels.keys.each { |key|
+                    if (attr_name = IRS::Org.get_attribute_name(key))
+                        org[attr_name] = row[labels[key]]
+                    end
+                }
+                orgs << org
             end
-            rows
+            orgs
         end
 
         private
