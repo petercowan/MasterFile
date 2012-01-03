@@ -31,6 +31,7 @@ downloader = IRS::DataDownloader.new
 files = downloader.download_files
 
 files.each do |file|
+    puts "parsing file " + file
     xls = IRS::XLSParser.new file
     orgs = xls.parse_file
 
