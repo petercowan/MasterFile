@@ -40,11 +40,11 @@ files.each do |file|
             ein = org_hash[:ein]
             if (org = IRS::Org.find_by_ein(ein))
                 if org.changed?
-                    #org.save
+                    org.save
                 end
             else
                 org = IRS::Org.new org_hash
-                #org.save
+                org.save
             end
         end
     end

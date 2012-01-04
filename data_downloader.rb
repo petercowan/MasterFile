@@ -12,18 +12,17 @@ module IRS
         def download_files
             doc = Nokogiri::HTML(open(DOWNLOAD_URL))
 
-            all_links = doc.search('a').find { |a|
-                !a['href'].nil? && a['href'].match(/\/pub\/irs-soi\/eo[^.]*\.xls/)}.each { |link| puts link.to_s}
-            links = doc.search('a').find { |a|
+            links = doc.search('a').find_all { |a|
                 !a['href'].nil? && a['href'].match(/\/pub\/irs-soi\/eo_[^.]*\.xls/)
-            }.collect {|a| a[1]}
+            }.collect {|a| a['href']}
+
+            #links.each {|a| puts a.to_s}
 
             local_files = Array.new
             if (!links.nil?)
-                puts "Downloading " + links.length.to_s + "files"
+                puts "Downloading " + links.length.to_s + " files"
                 links.each do |link|
-                    puts "Downloading file " + link.to_s
-                    local_files << download_file(link)
+                    local_files << download_file(link.to_s)
                 end
             end
             local_files
@@ -34,11 +33,11 @@ module IRS
         def download_file(rel_path)
             local_file = DATA_DIR + File.basename(rel_path)
 
-
-            #Mechanize
-            agent = Mechanize.new
-            agent.get(ROOT_URL + rel_path).save_as(local_file)
-            puts "local_file " + local_file
+            if (!File.exists?(local_file))
+                puts "Downloading file " + rel_path
+                agent = Mechanize.new
+                agent.get(ROOT_URL + rel_path).save_as(local_file)
+            end
             local_file
         end
     end
